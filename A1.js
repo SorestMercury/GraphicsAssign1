@@ -22,14 +22,18 @@ const orbPosition = { type: 'v3', value: new THREE.Vector3(0.0, 1.0, 0.0) };
 // you will need them in the latter part of the assignment
 
 // Materials: specifying uniforms and shaders
+const radius = 1.0;
+const sphereRadius = { type: 'f', value: radius}
 const teapotMaterial = new THREE.ShaderMaterial({
   uniforms: {
-    orbPosition: orbPosition
+    orbPosition: orbPosition,
+    sphereRadius: sphereRadius
   }
 });
 const sphereMaterial = new THREE.ShaderMaterial({
   uniforms: {
-    orbPosition: orbPosition
+    orbPosition: orbPosition,
+    sphereRadius: sphereRadius
   }
 });
 
@@ -63,7 +67,7 @@ loadAndPlaceOBJ('obj/teapot.obj', teapotMaterial, function (teapot) {
 // Create the sphere geometry
 // https://threejs.org/docs/#api/en/geometries/SphereGeometry
 // TODO: Make the radius of the orb a variable
-const sphereGeometry = new THREE.SphereGeometry(1.0, 32.0, 32.0);
+const sphereGeometry = new THREE.SphereGeometry(radius, 32.0, 32.0);
 const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
 sphere.position.set(0.0, 1.0, 0.0);
 sphere.parent = worldFrame;
