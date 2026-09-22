@@ -6,20 +6,25 @@ uniform float sphereRadius;
 // The shared variable is initialized in the vertex shader and passed to the fragment shader.
 out float intensity;
 out vec3 worldPosition;
+out float oldDistance;
 
 void main() {
+
+    vec3 adjustedOrbPos = orbPosition;
+    adjustedOrbPos.y += 0.9;
 
     vec4 worldPositionVec = (modelMatrix * vec4(position, 1.0));
     worldPosition = worldPositionVec.xyz;
     vec3 worldNormal = normalize(mat3(modelMatrix) * normal);
-
-    vec3 lightDir = normalize(orbPosition - worldPosition);
+    
+    vec3 lightDir = normalize(adjustedOrbPos - worldPosition);
     intensity = dot(worldNormal, lightDir);
 
-    vec3 orbToVertex = worldPosition - orbPosition;
+    vec3 orbToVertex = worldPosition - adjustedOrbPos;
+    oldDistance = length(orbToVertex);
     
-    if(length(orbToVertex) < sphereRadius+1.5){
-      worldPositionVec = vec4(orbPosition + normalize(orbToVertex) * (sphereRadius + 1.5),1.0);
+    if((length(orbToVertex) < sphereRadius+1.25)){
+      worldPositionVec = vec4(adjustedOrbPos + normalize(orbToVertex) * (sphereRadius + 1.25),1.0);
     }
 
     // TODO: Make changes here for part b, c, d

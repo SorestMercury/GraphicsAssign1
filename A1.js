@@ -18,6 +18,7 @@ const {
 
 // Initialize uniform
 const orbPosition = { type: 'v3', value: new THREE.Vector3(0.0, 1.0, 0.0) };
+const rainbowMode = { type: 'b', value: false};
 // TODO: Create uniform variable for the radius of the orb and pass it into the shaders,
 // you will need them in the latter part of the assignment
 
@@ -27,7 +28,8 @@ const sphereRadius = { type: 'f', value: radius}
 const teapotMaterial = new THREE.ShaderMaterial({
   uniforms: {
     orbPosition: orbPosition,
-    sphereRadius: sphereRadius
+    sphereRadius: sphereRadius,
+        rainbowMode: rainbowMode
   }
 });
 const sphereMaterial = new THREE.ShaderMaterial({
@@ -76,6 +78,8 @@ scene.add(sphere);
 const sphereLight = new THREE.PointLight(0xffffff, 1, 100);
 scene.add(sphereLight);
 
+let wasSemicolonPressed = false;
+
 // Listen to keyboard events.
 const keyboard = new THREEx.KeyboardState();
 function checkKeyboard() {
@@ -93,6 +97,10 @@ function checkKeyboard() {
     orbPosition.value.y -= 0.3;
   else if (keyboard.pressed("Q"))
     orbPosition.value.y += 0.3;
+
+  if (keyboard.pressed(";") && !wasSemicolonPressed)
+    rainbowMode.value = !rainbowMode.value;
+  wasSemicolonPressed = keyboard.pressed(";");
 
   // The following tells three.js that some uniforms might have changed
   teapotMaterial.needsUpdate = true;
