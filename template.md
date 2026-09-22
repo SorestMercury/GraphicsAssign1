@@ -76,14 +76,24 @@ gl_FragColor = vec4(intensity*vec3(1.0,1.0,1.0), 1.0);
 - Implement in fragment shader
 
 **Implementation:**
-[Explain your proximity detection algorithm]
+Distance is calculated by doing orbPosition - worldPosition, which gives a vector pointing from the vertex to the orb. If this vector's length is below a predetermiend threshold set in effectRange, then color the pixel green. I pass this variable from the vertex shader because I want to use the same value for the warping effect later.
 
 **Files Modified:**
 - `glsl/teapot.fs.glsl`
 
 **Key Code Snippets:**
 ```glsl
-// Add your proximity detection code here
+// glsl/teapot.fs.glsl
+float distance = length(orbPosition - worldPosition);
+
+if(distance < sphereRadius + effectRange){
+    gl_FragColor = gl_FragColor * vec4(0.0,1.0,0.0,1.0);
+}
+
+// glsl/teapot.vs.glsl
+out float effectRange;
+
+main(){effectRange = 1.25;}
 ```
 
 ---
@@ -96,7 +106,7 @@ gl_FragColor = vec4(intensity*vec3(1.0,1.0,1.0), 1.0);
 - Demonstrate vertex shader shape modification
 
 **Implementation:**
-[Explain your deformation algorithm]
+Since we already have the world position in a vec3 from earlier steps, we simply have to do worldPosition - adjustedOrbPos to get a vector pointing from the orb to the vertex. oldDistance will be used for a bonus feature later. If the length of our vector is less than the sphereRadius + effectRange, then we want to push it to the outside of the effect range by sliding it along that same vector. We use a formula to do just that. If P represents our original point, and D the distance we want to move along a unit/direction vector V, then we calculate our new position as P + DV. We apply this to our scenario and the final world position vector is adjustedOrbPos + normalize(orbToVertex) * (sphereRadius + effectRange). This pushes all pixels to be outside of the range we set, creating a force-field warping effect around the orb.
 
 **Files Modified:**
 - `glsl/teapot.vs.glsl`
@@ -104,7 +114,38 @@ gl_FragColor = vec4(intensity*vec3(1.0,1.0,1.0), 1.0);
 
 **Key Code Snippets:**
 ```glsl
-// Add your deformation code here
+// glsl/teapot.vs.glsl
+effectRange = 1.25;
+
+vec3 adjustedOrbPos = orbPosition;
+adjustedOrbPos.y += 0.9;
+
+vec4 worldPositionVec = (modelMatrix * vec4(position, 1.0));
+worldPosition = worldPositionVec.xyz;
+
+vec3 orbToVertex = worldPosition - adjustedOrbPos;
+oldDistance = length(orbToVertex);
+
+if((length(orbToVertex) < sphereRadius+effectRange)){
+    worldPositionVec = vec4(adjustedOrbPos + normalize(orbToVertex) * (sphereRadius + effectRange),1.0);
+}
+
+gl_Position = projectionMatrix * viewMatrix * worldPositionVec;
+```
+```JavaScript
+// A1.js
+const radius = 1.0;
+const sphereRadius = { type: 'f', value: radius}
+
+const teapotMaterial = new THREE.ShaderMaterial({
+  uniforms: {
+    orbPosition: orbPosition,
+    sphereRadius: sphereRadius,
+        rainbowMode: rainbowMode
+  }
+});
+
+const sphereGeometry = new THREE.SphereGeometry(radius, 32.0, 32.0);
 ```
 
 ---
@@ -112,18 +153,45 @@ gl_FragColor = vec4(intensity*vec3(1.0,1.0,1.0), 1.0);
 ## Part 2: Creative License (Optional - Bonus up to 10 pts)
 [If you completed Part 2, describe your creative extensions here]
 **Creative Features Implemented:**
-- [Feature 1]: [Description]
-- [Feature 2]: [Description]
-- [etc.]
+- I added a toggle that will switch the proximity detection from Green to "Rainbow" mode. This can be activated by pressing semicolon. The function takes the distance that the vertex was from the sphere *before* warping occurs and uses that to calculate the color of the pixel.
 
 **Files Modified:**
-- [List files you modified for creative features]
+- `A1.js`
+- `teapot.fs.glsl`
 
+**Key Code Snippets**
+```glsl
+// teapot.fs.glsl
+float distance = length(orbPosition - worldPosition);
+
+if(distance < sphereRadius + effectRange){
+	float rainbowProgress = (oldDistance/(sphereRadius + effectRange))*3.0;
+
+	float finalX = clamp(rainbowProgress+0.1, 0.0, 1.0);
+	float finalY = clamp(rainbowProgress-finalX, 0.0, 1.0);
+	float finalZ = clamp(rainbowProgress-finalX-finalY+0.2, 0.0, 1.0);
+	vec3 finalColor = vec3(finalX,finalY,finalZ);
+
+	if(rainbowMode)
+		gl_FragColor = gl_FragColor * vec4(finalColor, 1.0);
+	else
+		gl_FragColor = gl_FragColor * vec4(0.0,1.0,0.0,1.0);
+}
+```
+
+```JavaScript
+// A1.js
+let wasSemicolonPressed = false;
+
+if (keyboard.pressed(";") && !wasSemicolonPressed)
+    rainbowMode.value = !rainbowMode.value;
+wasSemicolonPressed = keyboard.pressed(";");
+```
 
 ## Screenshots
 [Include screenshots of your working program showing each part's functionality]
-- **Blue Orb:** [Screenshot showing blue orb movement]
-- **Lit Teapot:** [Screenshot showing Gouraud shading]
-- **Proximity Detection:** [Screenshot showing green coloring]
-- **Body Deformation:** [Screenshot showing mesh indentation]
+- **Blue Orb/Lighting:** ![Screenshot showing blue orb movement](https://cdn.phototourl.com/free/2026-09-22-2aa2d2ef-1781-4856-a868-fc0a605e917a.png)
+- **Proximity Detection:** ![Screenshot showing green coloring](https://cdn.phototourl.com/free/2026-09-22-553b4739-824a-4821-beda-d51be9d72318.png)
+- **Body Deformation:** ![Screenshot showing mesh indentation](https://cdn.phototourl.com/free/2026-09-22-a7865c1a-4ee5-4b7e-920d-8743b9506e6c.png)
+- **Rainbow Mode** ![Screenshot of rainbow mode](https://cdn.phototourl.com/free/2026-09-22-e930c6eb-83d1-42e3-ba69-262225d56c69.png)
 

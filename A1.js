@@ -35,7 +35,6 @@ const teapotMaterial = new THREE.ShaderMaterial({
 const sphereMaterial = new THREE.ShaderMaterial({
   uniforms: {
     orbPosition: orbPosition,
-    sphereRadius: sphereRadius
   }
 });
 
