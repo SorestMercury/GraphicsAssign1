@@ -7,24 +7,29 @@ uniform float sphereRadius;
 out float intensity;
 out vec3 worldPosition;
 out float oldDistance;
+out float effectRange;
 
 void main() {
+
+    effectRange = 1.25;
 
     vec3 adjustedOrbPos = orbPosition;
     adjustedOrbPos.y += 0.9;
 
     vec4 worldPositionVec = (modelMatrix * vec4(position, 1.0));
     worldPosition = worldPositionVec.xyz;
+
     vec3 worldNormal = normalize(mat3(modelMatrix) * normal);
-    
+
     vec3 lightDir = normalize(adjustedOrbPos - worldPosition);
+
     intensity = dot(worldNormal, lightDir);
 
     vec3 orbToVertex = worldPosition - adjustedOrbPos;
     oldDistance = length(orbToVertex);
     
-    if((length(orbToVertex) < sphereRadius+1.25)){
-      worldPositionVec = vec4(adjustedOrbPos + normalize(orbToVertex) * (sphereRadius + 1.25),1.0);
+    if((length(orbToVertex) < sphereRadius+effectRange)){
+      worldPositionVec = vec4(adjustedOrbPos + normalize(orbToVertex) * (sphereRadius + effectRange),1.0);
     }
 
     // TODO: Make changes here for part b, c, d

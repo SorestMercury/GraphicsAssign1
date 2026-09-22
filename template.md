@@ -1,8 +1,8 @@
 # CS 4361 Assignment 1: Hello Teapot! Introduction to Three.js, WebGL, and Shaders
 
-**Student Name:** [Your Name]  
-**Student Number:** [Your Student Number]  
-**NetID:** [Your NetID]  
+**Student Name:** Dylan Horton
+**Student Number:** 2021706202
+**NetID:** DRH220003
 
 ## Assignment Overview
 
@@ -18,16 +18,15 @@ This assignment introduces Three.js, WebGL, and shader programming through the c
 - Must modify shaders, not use Three.js functions
 
 **Implementation:**
-[Explain your approach and key code changes]
+The movement for the orb was already implemented. For changing the color, I simply had to edit one line of the fragment shader file. There is a vector with Red, Green, Blue, and Alpha values to represent color. This means to get blue, we set it to (0.0,0.0,1.0,1.0).
 
 **Files Modified:**
-- `glsl/sphere.vs.glsl`
 - `glsl/sphere.fs.glsl`
-- `A1.js` 
 
 **Key Code Snippets:**
 ```glsl
-// Add your key shader code here
+// glsl/sphere.fs.glsl
+gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);
 ```
 
 ---
@@ -40,15 +39,31 @@ This assignment introduces Three.js, WebGL, and shader programming through the c
 - Orb should "activate" and light different parts of teapot as it moves
 
 **Implementation:**
-[Explain your lighting model and shader modifications]
+I chose to do the majority of my math with vec3 objects since the orbPosition uniform was a vec3. I adjust the orb position so that the warping effect lines up bettter later. worldPosition is preserved as a vec4 for the final gl_Position calculation at the end.
+
+After thse initial steps, I convert the vertex's normal vector to world space by multiplying it with the model matrix. Specifically, mat3(modelMatrix) since we do not need the translation information for a normal vector. We actually remove the scaling factor too by normalizing the result. This leaves us with a normal that has been correctly rotated to account for the change from model to world space. Then, we can do simple vector math (adjustedOrbPos - worldPosition) to get a vector that points from the vertex to the orb in world space. If we normalize this vector as well, then we can leverage the formula  𝐚⋅𝐛=|𝐚||𝐛|cos(𝜃). Since |a| and |b| are both 1, this is effectively 𝐚⋅𝐛=cos(𝜃), which is exactly what we want to base the intensity off of. We store this in an out variable to be accessed by the fragment shader.
 
 **Files Modified:**
-- `A1.js`
 - `glsl/teapot.vs.glsl`
+- `glsl/teapot.fs.glsl`
 
 **Key Code Snippets:**
 ```glsl
-// Add your lighting calculation code here
+// teapot.vs.glsl
+vec3 adjustedOrbPos = orbPosition;
+adjustedOrbPos.y += 0.9;
+
+vec4 worldPositionVec = (modelMatrix * vec4(position, 1.0));
+worldPosition = worldPositionVec.xyz;
+
+vec3 worldNormal = normalize(mat3(modelMatrix) * normal);
+
+vec3 lightDir = normalize(adjustedOrbPos - worldPosition);
+
+intensity = dot(worldNormal, lightDir);
+
+//teapot.fs.glsl
+gl_FragColor = vec4(intensity*vec3(1.0,1.0,1.0), 1.0);
 ```
 
 ---
