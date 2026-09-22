@@ -152,8 +152,9 @@ const sphereGeometry = new THREE.SphereGeometry(radius, 32.0, 32.0);
 
 ## Part 2: Creative License (Optional - Bonus up to 10 pts)
 [If you completed Part 2, describe your creative extensions here]
+
 **Creative Features Implemented:**
-- I added a toggle that will switch the proximity detection from Green to "Rainbow" mode. This can be activated by pressing semicolon. The function takes the distance that the vertex was from the sphere *before* warping occurs and uses that to calculate the color of the pixel.
+I added a toggle that will switch the proximity detection from Green to "Rainbow" mode. This can be activated by pressing semicolon. The function takes the distance that the vertex was from the sphere *before* warping occurs and uses that to calculate the color of the pixel.
 
 **Files Modified:**
 - `A1.js`
